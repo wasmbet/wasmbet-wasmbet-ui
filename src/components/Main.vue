@@ -14,6 +14,12 @@
                 <br>
                 <div style="color: white; text-align: center;" v-if="mnemonic">{{mnemonic}}</div>
                 <div style="color: white; text-align: center;" v-if="address">{{address}}</div>
+                <div style="color: white; text-align: center;" v-if="mnemonic">
+                  <a href="https://faucet.pub.testnet.enigma.co/" target="_blank">faucet</a>
+                </div>
+
+
+                
             </div>
             <div class="middle-area">
                 <div class="countdown-row" style="">
@@ -127,7 +133,7 @@ export default {
       show: true,
       resultMessage: '',
       wasmbetAddress: 'https://bootstrap.pub.testnet2.enigma.co',
-      contractAddress: '',//your contract address input
+      contractAddress: 'secret1q9lgcsudtw84rtqkwnmh8dpcmkwz99nlgl5s4y',
       address: null,
       prediction: 30,
       betAmount: 1,
@@ -271,9 +277,11 @@ export default {
         || (this.bettingList[0].position === 'under' && this.bettingList[0].prediction_number > this.bettingList[0].lucky_number)) {
           this.predictionStyle.color = '#00e689';
           this.resultMessage = `+${this.payoutOnWin.toFixed(4)}`;
+          this.playSound(true);
         } else {
           this.predictionStyle.color = '#ff006c';
           this.resultMessage = `-${this.betAmount.toFixed(4)}`;
+          this.playSound(false);
         }
         await this.getAmount();
         this.show = false;
@@ -316,6 +324,15 @@ export default {
       });
       return result;
     },
+    playSound(result) {
+      if (result) {
+        let audio = new Audio('/src/assets/sound/win.mp3');
+        audio.play();
+      } else {
+        let audio = new Audio('/src/assets/sound/lose.mp3');
+        audio.play();
+      }
+    }
   },
 }
 </script>
