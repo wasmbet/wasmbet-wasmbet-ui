@@ -1,9 +1,9 @@
 # wasmbet-wasmbet-ui
 
-'''sh
+```sh
 npm run dev
-'''
+```
 
-'''sh
+```sh
 npm run build
-'''
+```
