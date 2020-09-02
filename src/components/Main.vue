@@ -127,7 +127,7 @@ export default {
       show: true,
       resultMessage: '',
       wasmbetAddress: 'https://bootstrap.pub.testnet2.enigma.co',
-      contractAddress: 'secret1q7d3msna9an4eyvhm6ttur8jc3f4z38h5dtjyz',
+      contractAddress: '',//your contract address input
       address: null,
       prediction: 30,
       betAmount: 1,
