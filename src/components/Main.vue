@@ -14,12 +14,9 @@
                 <br>
                 <div style="color: white; text-align: center;" v-if="mnemonic">{{mnemonic}}</div>
                 <div style="color: white; text-align: center;" v-if="address">{{address}}</div>
-                <div style="color: white; text-align: center;" v-if="mnemonic">
-                  <a href="https://faucet.pub.testnet.enigma.co/" target="_blank">faucet</a>
+                <div style="color: white; text-align: center;">
+                  <a href="http://faucet.pub.testnet.enigma.co" target="_blank" style="color: white; text-align: center;">faucet</a>
                 </div>
-
-
-                
             </div>
             <div class="middle-area">
                 <div class="countdown-row" style="">
@@ -38,14 +35,14 @@
                         </div>
                         <div style="margin-bottom: 10px;">
                           <input type="number" :disabled="isBetting" v-model="betAmount">
-                          <input type="text" :value="`${winChange.toFixed(0)}%`" style="max-width:143px;">
+                          <input type="text" :value="`${parseFloat(winChange).toFixed(0)}%`" style="max-width:143px;">
                         </div>
                         <div style="margin-bottom: 10px; color: #d9d9d9; font-size: 14px; text-align: center;">
                             <span>Payout on Win</span>
                         </div>
                         <div style="margin-bottom: 10px;">
-                            <input type="number" :value="payoutOnWin.toFixed(4)" readonly>
-                            <input type="text" :value="`${multiplier.toFixed(4)}X`" style="max-width:143px;" readonly>
+                            <input type="number" :value="parseFloat(payoutOnWin).toFixed(4)" readonly>
+                            <input type="text" :value="`${parseFloat(multiplier).toFixed(4)}X`" style="max-width:143px;" readonly>
                         </div>
                         <div style="margin-bottom: 10px; color: #d9d9d9; font-size: 14px; text-align: center;">
                             <span>Amount</span>
@@ -110,6 +107,8 @@ import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 import { Encoding } from "@iov/encoding";
 
+import { CONTRACT_ADDRESSS } from '../../config'
+
 import Clock from './Clock';
 
 import * as bip39 from "bip39";
@@ -133,7 +132,7 @@ export default {
       show: true,
       resultMessage: '',
       wasmbetAddress: 'https://bootstrap.pub.testnet2.enigma.co',
-      contractAddress: 'secret1q9lgcsudtw84rtqkwnmh8dpcmkwz99nlgl5s4y',
+      contractAddress: CONTRACT_ADDRESSS,
       address: null,
       prediction: 30,
       betAmount: 1,
@@ -212,7 +211,8 @@ export default {
       this.getAmount();
     },
     async createMmnemonic() {
-      this.loadNemonicWallet();
+      this.mnemonic = bip39.generateMnemonic();
+      this.loadNemonicWallet(this.mnemonic);
     },
     async loadNemonicWallet(mnemonic) {
       try {
@@ -262,9 +262,13 @@ export default {
     },
     async getAmount() {
       let info = await this.secretJsClient.getAccount(this.address);
-      let result = info.balance.filter(item => item.denom === 'uscrt');
-      if (result[0]) {
-        this.balance = (result[0].amount/1000000).toFixed(2);
+      if (info && info.balance) {
+        let result = info.balance.filter(item => item.denom === 'uscrt');
+        if (result[0]) {
+          this.balance = parseFloat(result[0].amount/1000000).toFixed(2);
+        }
+      } else {
+        this.balance = 0;
       }
     },
     setPosition(pos) {
@@ -276,11 +280,11 @@ export default {
         if ((this.bettingList[0].position === 'over' && this.bettingList[0].prediction_number < this.bettingList[0].lucky_number)
         || (this.bettingList[0].position === 'under' && this.bettingList[0].prediction_number > this.bettingList[0].lucky_number)) {
           this.predictionStyle.color = '#00e689';
-          this.resultMessage = `+${this.payoutOnWin.toFixed(4)}`;
+          this.resultMessage = `+${parseFloat(this.payoutOnWin).toFixed(4)}`;
           this.playSound(true);
         } else {
           this.predictionStyle.color = '#ff006c';
-          this.resultMessage = `-${this.betAmount.toFixed(4)}`;
+          this.resultMessage = `-${parseFloat(this.betAmount).toFixed(4)}`;
           this.playSound(false);
         }
         await this.getAmount();
