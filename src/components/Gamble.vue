@@ -3,29 +3,34 @@
 	<div class="container">
         <div class="count-block">
             <div class="head-area">
+                <div>
+                  <button @click="$router.push('/');">stake</button>
+                </div>
                 <div style="color: white; text-align: center;" v-if="address">SECRET WASMBET</div>
                 <div style="color: white; text-align: center;" v-if="!address">
                   <span>The extension wallet is not detected. Mnemonic Wallet</span> 
                   <!-- <span style="text-decoration: underline;" >Creating a local wallet</span> -->
                   <button class="red-button1" style="background-color: #797979" @click="createMmnemonic">Create</button>
                   <button class="red-button1" style="background-color: #797979" @click="importNemonic">Import</button>
+                  <button class="red-button1" style="background-color: #797979" @click="setMasterWallet1">setMasterWallet1</button>
+                  <button class="red-button1" style="background-color: #797979" @click="setMasterWallet2">setMasterWallet2</button>
+                  <button class="red-button1" style="background-color: #797979" @click="setMasterWallet3">setMasterWallet3</button>
+                  <button class="red-button1" style="background-color: #797979" @click="setMasterWallet4">setMasterWallet4</button>
                   <!-- <span style="text-decoration: underline;">Creating a local wallet</span> -->
                 </div>
                 <br>
                 <div style="color: white; text-align: center;" v-if="mnemonic">{{mnemonic}}</div>
                 <div style="color: white; text-align: center;" v-if="address">{{address}}</div>
-                <div style="color: white; text-align: center;">
-                  <a href="http://faucet.pub.testnet.enigma.co" target="_blank" style="color: white; text-align: center;">faucet</a>
-                </div>
+                <div style="color: white; text-align: center;" v-if="address">CASINO ADDRESS : {{$route.params.address}}</div>
             </div>
             <div class="middle-area">
                 <div class="countdown-row" style="">
 						          <div class="my counting-row" style="background-color: #222222; padding: 20px 20px 50px 20px; border-radius: 20px; vertical-align: middle;">
                         <div class="row justify-content-center" style="padding: 40px; text-align: center">
-                          <a @click="setPosition('under')" class="postion-button" :style="(position === 'under') ? 'color:white; text-decoration: underline;' : null">
+                          <a @click="setPosition('under')" class="postion-button" :style="(position === 'under') ? 'color:white !important; text-decoration: underline;' : null">
                             UNDER
                           </a>
-                          <a @click="setPosition('over')" class="postion-button" :style="(position === 'over') ? 'color:white; text-decoration: underline;' : null">
+                          <a @click="setPosition('over')" class="postion-button" :style="(position === 'over') ? 'color:white !important; text-decoration: underline;' : null">
                             OVER
                           </a>
 								        </div>
@@ -107,13 +112,10 @@ import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 import { Encoding } from "@iov/encoding";
 
-import { CONTRACT_ADDRESSS } from '../../config'
-
 import Clock from './Clock';
 
 import * as bip39 from "bip39";
 import * as SecretJS from "secretjs";
-import Vue from 'vue'
 
 import { GaiaApi } from "@chainapsis/cosmosjs/gaia/api";
 import { AccAddress } from "@chainapsis/cosmosjs/common/address";
@@ -131,8 +133,8 @@ export default {
     return {
       show: true,
       resultMessage: '',
-      wasmbetAddress: 'https://bootstrap.pub.testnet2.enigma.co',
-      contractAddress: CONTRACT_ADDRESSS,
+      wasmbetAddress: 'https://wasmbet.com/',
+      contractAddress: null,
       address: null,
       prediction: 30,
       betAmount: 1,
@@ -160,9 +162,27 @@ export default {
     },
 	},
   async mounted() {
-    this.checkWallet();
+    // this.checkWallet();
+    this.contractAddress = this.$route.params.address;
+    // await this.loadNemonicWallet("build ankle defense elbow love black joke budget party sort grace spawn fortune abuse found color trophy fever fetch survey fat display satisfy give");
   },
   methods: {
+    async setMasterWallet1() {
+      await this.loadNemonicWallet("build ankle defense elbow love black joke budget party sort grace spawn fortune abuse found color trophy fever fetch survey fat display satisfy give");
+      await this.getCasinoList();
+    },
+    async setMasterWallet2() {
+      await this.loadNemonicWallet("phrase because tail because urge sunset dash spy myth tape smooth pill");
+      await this.getCasinoList();
+    },
+    async setMasterWallet3() {
+      await this.loadNemonicWallet("author leave multiply episode profit sudden derive layer there three enroll sick");
+      await this.getCasinoList();
+    },
+    async setMasterWallet4() {
+      await this.loadNemonicWallet("drastic edge taste excite inspire silent sick matter satisfy diary copper exchange");
+      await this.getCasinoList();
+    },
     async importNemonic() {
       let mnemonic = prompt('INPUT Mnemonic');
       if (mnemonic) {
@@ -179,10 +199,10 @@ export default {
     },
     async loadWallet() {
       this.cosmosJS = new GaiaApi({
-        chainId: "enigma-pub-testnet-3",
+        chainId: "test",
         walletProvider: window.cosmosJSWalletProvider,
-        rpc: "http://bootstrap.pub.testnet2.enigma.co:26657/",
-        rest: "http://bootstrap.pub.testnet2.enigma.co:1317/"
+        rpc: "http://51.132.234.211:26657/",
+        rest: "https://wasmbet.com"
       });
       await this.cosmosJS.enable();
       this.address = (await this.cosmosJS.getKeys())[0].bech32Address;
@@ -309,6 +329,7 @@ export default {
         }, "", [{ amount: `${this.betAmount*1000000}`, denom: "uscrt" }]);
 
         let result = await this.getBettngResult();
+        console.log(result);
         this.bettingList = [result].concat(this.bettingList);
         this.$refs.clock.stopSpin(result.lucky_number);
       } catch(e) {
@@ -363,7 +384,7 @@ input {
    max-width: 500px; 
    margin-top: 30px; 
    font-size: 20px;
-   color: #a9a9a9; 
+   color: #a9a9a9 !important; 
    padding: 50px; 
    cursor: pointer;
 
