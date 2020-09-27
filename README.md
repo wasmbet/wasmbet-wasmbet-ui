@@ -1,7 +1,7 @@
 # wasmbet-test
 
 > A Vue.js project
-
+testsite : http://wasmbet.com:8080
 ## Build Setup
 
 ``` bash
