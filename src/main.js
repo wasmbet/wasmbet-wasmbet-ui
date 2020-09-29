@@ -13,11 +13,13 @@ const routes = [
     path: '/' ,
     name: 'stake',
     component : Stake,
+    props: true
   },
   {
     path: '/gamble/:address' ,
     name: 'gamble',
     component : Gamble,
+    props: true,
   },
 ]
 

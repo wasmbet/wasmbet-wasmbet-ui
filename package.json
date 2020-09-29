@@ -12,6 +12,7 @@
   "dependencies": {
     "@chainapsis/cosmosjs": "0.0.3-alpha.3",
     "@iov/encoding": "^2.5.0",
+    "@terra-money/terra.js": "^0.4.19",
     "babel-polyfill": "^6.26.0",
     "bip39": "^3.0.2",
     "secretjs": "^0.9.17",

@@ -4,24 +4,15 @@
         <div class="count-block">
             <div class="head-area">
                 <div>
-                  <button @click="$router.push('/');">stake</button>
+                  <button @click="$router.push('/')">stake</button>
                 </div>
                 <div style="color: white; text-align: center;" v-if="address">SECRET WASMBET</div>
                 <div style="color: white; text-align: center;" v-if="!address">
                   <span>The extension wallet is not detected. Mnemonic Wallet</span> 
-                  <!-- <span style="text-decoration: underline;" >Creating a local wallet</span> -->
-                  <button class="red-button1" style="background-color: #797979" @click="createMmnemonic">Create</button>
-                  <button class="red-button1" style="background-color: #797979" @click="importNemonic">Import</button>
-                  <button class="red-button1" style="background-color: #797979" @click="setMasterWallet1">setMasterWallet1</button>
-                  <button class="red-button1" style="background-color: #797979" @click="setMasterWallet2">setMasterWallet2</button>
-                  <button class="red-button1" style="background-color: #797979" @click="setMasterWallet3">setMasterWallet3</button>
-                  <button class="red-button1" style="background-color: #797979" @click="setMasterWallet4">setMasterWallet4</button>
-                  <!-- <span style="text-decoration: underline;">Creating a local wallet</span> -->
                 </div>
                 <br>
-                <div style="color: white; text-align: center;" v-if="mnemonic">{{mnemonic}}</div>
                 <div style="color: white; text-align: center;" v-if="address">{{address}}</div>
-                <div style="color: white; text-align: center;" v-if="address">CASINO ADDRESS : {{$route.params.address}}</div>
+                <div style="color: white; text-align: center;" v-if="address">CASINO ADDRESS : {{contractAddress}}</div>
             </div>
             <div class="middle-area">
                 <div class="countdown-row" style="">
@@ -114,14 +105,17 @@ import { Encoding } from "@iov/encoding";
 
 import Clock from './Clock';
 
+import extension from '../assets/js/extension'
+
 import * as bip39 from "bip39";
 import * as SecretJS from "secretjs";
 
 import { GaiaApi } from "@chainapsis/cosmosjs/gaia/api";
 import { AccAddress } from "@chainapsis/cosmosjs/common/address";
 import { Coin } from "@chainapsis/cosmosjs/common/coin";
-import { MsgSend } from "@chainapsis/cosmosjs/x/bank";
 import { WalletProvider } from "@chainapsis/cosmosjs/core/walletProvider";
+
+import { LCDClient, MnemonicKey, Extension, MsgInstantiateContract, MsgExecuteContract, StdTx, StdFee, StdSignature, StdSignMsg, MsgSend} from '@terra-money/terra.js';
 
 export default {
   components: {
@@ -133,17 +127,21 @@ export default {
     return {
       show: true,
       resultMessage: '',
-      wasmbetAddress: 'https://secret.wasmbet.com/',
       contractAddress: null,
       address: null,
       prediction: 30,
       betAmount: 1,
-      cosmosJS: null,
+      terra: null,
+      ext: null,
+      lcdClientConfig: {
+        URL: 'https://terra.wasmbet.com',
+        chainID: 'tequila-0004',
+        gasPrices: { ukrw: 178.05 },
+        gasAdjustment: 1.5,
+      },
       balance: 0,
       isBetting: false,
       position: 'over',
-      secretJsClient: null,
-      mnemonic: '',
       predictionStyle: {
         color: '#fff',
       },
@@ -162,134 +160,25 @@ export default {
     },
 	},
   async mounted() {
-    // this.checkWallet();
     this.contractAddress = this.$route.params.address;
-    // await this.loadNemonicWallet("build ankle defense elbow love black joke budget party sort grace spawn fortune abuse found color trophy fever fetch survey fat display satisfy give");
+    this.terra = new LCDClient(this.lcdClientConfig);
+
+    this.ext = extension;
+    this.loadExtension();
   },
   methods: {
-    async setMasterWallet1() {
-      await this.loadNemonicWallet("build ankle defense elbow love black joke budget party sort grace spawn fortune abuse found color trophy fever fetch survey fat display satisfy give");
-      await this.getCasinoList();
-    },
-    async setMasterWallet2() {
-      await this.loadNemonicWallet("phrase because tail because urge sunset dash spy myth tape smooth pill");
-      await this.getCasinoList();
-    },
-    async setMasterWallet3() {
-      await this.loadNemonicWallet("author leave multiply episode profit sudden derive layer there three enroll sick");
-      await this.getCasinoList();
-    },
-    async setMasterWallet4() {
-      await this.loadNemonicWallet("drastic edge taste excite inspire silent sick matter satisfy diary copper exchange");
-      await this.getCasinoList();
-    },
-    async importNemonic() {
-      let mnemonic = prompt('INPUT Mnemonic');
-      if (mnemonic) {
-        this.loadNemonicWallet(mnemonic);
-      }
-    },
-    async checkWallet() {
-      console.log(window.cosmosJSWalletProvider);
-      if (window.cosmosJSWalletProvider) {
-        await this.loadWallet();
-      } else {
-        setTimeout(() => this.checkWallet(), 1000);
-      }
-    },
-    async loadWallet() {
-      this.cosmosJS = new GaiaApi({
-        chainId: "test",
-        walletProvider: window.cosmosJSWalletProvider,
-        rpc: "http://51.132.234.211:26657/",
-        rest: "https://secret.wasmbet.com"
-      });
-      await this.cosmosJS.enable();
-      this.address = (await this.cosmosJS.getKeys())[0].bech32Address;
-      
-      let signing = async (signBytes) => ({
-        pub_key: SecretJS.encodeSecp256k1Pubkey((await this.cosmosJS.getKeys())[0].pubKey),
-        signature: Encoding.toBase64(await window.cosmosJSWalletProvider.sign(this.cosmosJS.context, this.address, signBytes)),
-      })
-
-      this.secretJsClient = new SecretJS.SigningCosmWasmClient(
-        this.wasmbetAddress,
-        this.address,
-        (signBytes) => signing(signBytes),
-        null,
-        {
-          init: {
-            amount: [{ amount: "200000", denom: "uscrt" }],
-            gas: "200000",
-          },
-          exec: {
-            amount: [{ amount: "200000", denom: "uscrt" }],
-            gas: "200000",
-          },
-        }
-      );
-      this.getAmount();
-    },
-    async createMmnemonic() {
-      this.mnemonic = bip39.generateMnemonic();
-      this.loadNemonicWallet(this.mnemonic);
-    },
-    async loadNemonicWallet(mnemonic) {
-      try {
-        if (!mnemonic) {
-          mnemonic = bip39.generateMnemonic();
-        }
-
-        let tx_encryption_seed = localStorage.getItem("tx_encryption_seed");
-        if (tx_encryption_seed) {
-          tx_encryption_seed = Uint8Array.from(
-            JSON.parse(`[${tx_encryption_seed}]`)
-          );
+    loadExtension() {
+      setTimeout(() => {
+        if (this.ext.address) {
+          this.address = this.ext.address;
+          this.getAmount();
         } else {
-          tx_encryption_seed = SecretJS.EnigmaUtils.GenerateNewSeed();
+          this.loadExtension();
         }
-
-        const signingPen = await SecretJS.Secp256k1Pen.fromMnemonic(mnemonic);
-        const myWalletAddress = SecretJS.pubkeyToAddress(
-          SecretJS.encodeSecp256k1Pubkey(signingPen.pubkey),
-          "secret"
-        );
-        this.address = myWalletAddress;
-        const secretJsClient = new SecretJS.SigningCosmWasmClient(
-          this.wasmbetAddress,
-          myWalletAddress,
-          (signBytes) => signingPen.sign(signBytes),
-          null,
-          {
-            init: {
-              amount: [{ amount: "200000", denom: "uscrt" }],
-              gas: "200000",
-            },
-            exec: {
-              amount: [{ amount: "200000", denom: "uscrt" }],
-              gas: "200000",
-            },
-          }
-        );
-        this.mnemonic = mnemonic;
-        this.secretJsClient = secretJsClient;
-        this.getAmount();
-
-      } catch (e) {
-        alert(e.message);
-        console.log(e);
-      }
+      }, 1000);
     },
     async getAmount() {
-      let info = await this.secretJsClient.getAccount(this.address);
-      if (info && info.balance) {
-        let result = info.balance.filter(item => item.denom === 'uscrt');
-        if (result[0]) {
-          this.balance = parseFloat(result[0].amount/1000000).toFixed(2);
-        }
-      } else {
-        this.balance = 0;
-      }
+      this.balance = (parseInt((await this.terra.bank.balance(this.address)).get("ukrw").amount.toString())/1000000).toFixed(2);
     },
     setPosition(pos) {
       this.position = pos;
@@ -313,25 +202,30 @@ export default {
     },
     async betting(positon) {
       try {
+        console.log('bbbbbbbbbbbbbbbbbbbbbeeeeeeeeeeettttttttttttttttttttttttttttttttttttttttinmg');
         this.isBetting = true;
         this.predictionStyle.color = '#fff';
         this.resultMessage = '';
         this.show = true;
         this.$refs.clock.startSpin();
-        
-        this.balance -= this.betAmount;
-        await this.secretJsClient.execute(this.contractAddress, {
-          "ruler": { "phrase":"allinbitewjkrwerlwerwerbfcwl",
-                      "prediction_number": this.prediction,
-                      "position": this.position,
-                      "bet_amount": `${this.betAmount*1000000}`,
-                      },
-        }, "", [{ amount: `${this.betAmount*1000000}`, denom: "uscrt" }]);
 
-        let result = await this.getBettngResult();
-        console.log(result);
-        this.bettingList = [result].concat(this.bettingList);
-        this.$refs.clock.stopSpin(result.lucky_number);
+        this.balance -= this.betAmount;
+
+        const execute = new MsgExecuteContract(
+          this.address, // sender
+          this.contractAddress, // contract account address
+          {
+          "ruler": { 
+            "phrase":"allinbitewjkrwerlwerwerbfcwl",
+              "prediction_number": this.prediction,
+              "position": this.position,
+              "bet_amount": `${this.betAmount*1000000}`,
+            },
+          },
+          { "ukrw": `${this.betAmount*1000000}` }, // coins
+        );
+
+        this.ext.post([execute], this.bettingCallback);
       } catch(e) {
         console.log(e);
         alert(`ERROR: ${e.message}`);
@@ -341,12 +235,31 @@ export default {
         await this.getAmount();
       }
     },
+    async bettingCallback(payload) {
+      console.log('bettingCallback');
+      console.log(payload);
+      if (payload.success) {
+        let result = await this.getBettngResult();
+        console.log(result);
+        this.bettingList = [result].concat(this.bettingList);
+        this.$refs.clock.stopSpin(result.lucky_number);
+      } else {
+        alert('error => check console.log');
+        this.$refs.clock.stopSpin();
+        this.isBetting = false;
+        this.predictionStyle.color = '#fff';
+        await this.getAmount();
+      }
+    },
     async getBettngResult() {
-      let result = await this.secretJsClient.queryContractSmart(this.contractAddress, {
-        "getmystate": {
-          "address": this.address,
-        }
-      });
+      const result = await this.terra.wasm.contractQuery(
+        this.contractAddress,
+        {
+          getmystate: {
+            address: this.address,
+          },
+        } // query msg
+      );
       return result;
     },
     playSound(result) {
