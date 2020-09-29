@@ -287,7 +287,6 @@ export default {
       isBetting: false,
       position: 'over',
       codeId: 143,
-      mnemonic: '',
       lcdClientConfig: {
         URL: 'https://terra.wasmbet.com',
         chainID: 'tequila-0004',
@@ -317,7 +316,6 @@ export default {
     }
 	},
   async mounted() {
-    console.log(extension);
     this.terra = new LCDClient(this.lcdClientConfig);
 
     this.ext = extension;
@@ -351,7 +349,7 @@ export default {
                 founder_commission_rate: parseInt((parseFloat(this.createCasinoInput.founderCommissionRate)*10000).toFixed(0)),
                 min_bet_amount: this.createCasinoInput.founderCommissionRate,
                 max_bet_rate:  parseInt((parseFloat(this.createCasinoInput.maxBetRate)*10000).toFixed(0)), //this.createCasinoInput.maxBetRate
-                seed: SecretJS.EnigmaUtils.GenerateNewSeed().toString(),
+                seed: `${new Date().getTime()}${Math.random()*100000000}`,
               },
             }, // InitMsg
             {}, // init coins
