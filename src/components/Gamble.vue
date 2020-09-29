@@ -6,9 +6,10 @@
                 <div>
                   <button @click="$router.push('/')">stake</button>
                 </div>
-                <div style="color: white; text-align: center;" v-if="address">SECRET WASMBET</div>
+                <div style="color: white; text-align: center;" v-if="address">TERRA WASMBET</div>
                 <div style="color: white; text-align: center;" v-if="!address">
-                  <span>The extension wallet is not detected. Mnemonic Wallet</span> 
+                  <span>The extension wallet is not detected. </span> 
+                  <a href="https://terra.money/extension" target="_blank">install Terra Station(wallet)</a>
                 </div>
                 <br>
                 <div style="color: white; text-align: center;" v-if="address">{{address}}</div>
@@ -101,20 +102,9 @@
 import "babel-polyfill";
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
-import { Encoding } from "@iov/encoding";
 
 import Clock from './Clock';
-
 import extension from '../assets/js/extension'
-
-import * as bip39 from "bip39";
-import * as SecretJS from "secretjs";
-
-import { GaiaApi } from "@chainapsis/cosmosjs/gaia/api";
-import { AccAddress } from "@chainapsis/cosmosjs/common/address";
-import { Coin } from "@chainapsis/cosmosjs/common/coin";
-import { WalletProvider } from "@chainapsis/cosmosjs/core/walletProvider";
-
 import { LCDClient, MnemonicKey, Extension, MsgInstantiateContract, MsgExecuteContract, StdTx, StdFee, StdSignature, StdSignMsg, MsgSend} from '@terra-money/terra.js';
 
 export default {
@@ -239,10 +229,19 @@ export default {
       console.log('bettingCallback');
       console.log(payload);
       if (payload.success) {
-        let result = await this.getBettngResult();
-        console.log(result);
-        this.bettingList = [result].concat(this.bettingList);
-        this.$refs.clock.stopSpin(result.lucky_number);
+        try {
+          let result = await this.getBettngResult();
+          console.log(result);
+          this.bettingList = [result].concat(this.bettingList);
+          this.$refs.clock.stopSpin(result.lucky_number);
+        } catch(e) {
+          console.log(e);
+          alert('error => check console.log');
+          this.$refs.clock.stopSpin();
+          this.isBetting = false;
+          this.predictionStyle.color = '#fff';
+          await this.getAmount();
+        } 
       } else {
         alert('error => check console.log');
         this.$refs.clock.stopSpin();

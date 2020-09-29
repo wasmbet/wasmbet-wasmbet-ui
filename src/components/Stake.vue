@@ -262,13 +262,8 @@ import extension from '../assets/js/extension'
 import Clock from './Clock';
 
 import * as bip39 from "bip39";
-import * as SecretJS from "secretjs";
 import Vue from 'vue'
 
-import { GaiaApi } from "@chainapsis/cosmosjs/gaia/api";
-import { AccAddress } from "@chainapsis/cosmosjs/common/address";
-import { Coin } from "@chainapsis/cosmosjs/common/coin";
-import { WalletProvider } from "@chainapsis/cosmosjs/core/walletProvider";
 import axios from "axios";
 
 import { LCDClient, MnemonicKey, Extension, MsgInstantiateContract, MsgExecuteContract, StdTx, StdFee, StdSignature, StdSignMsg, MsgSend} from '@terra-money/terra.js';
@@ -281,8 +276,6 @@ export default {
       showCreateCasinoDialog: false,
       showDepositDialog: false,
       showWithdrawDialog: false,
-      resultMessage: '',
-      wasmbetAddress: 'https://wasmbet.com/',
       contractAddress: null,
       address: null,
       prediction: 30,
@@ -293,7 +286,6 @@ export default {
       balance: 0,
       isBetting: false,
       position: 'over',
-      secretJsClient: null,
       codeId: 143,
       mnemonic: '',
       lcdClientConfig: {
@@ -478,7 +470,6 @@ export default {
     async getCasinoList() {
       let result = await axios.get("https://tequila-fcd.terra.dev/v1/wasm/contracts?page=1&limit=100&search=wasmbet-test2-O8v6DSxLB6dGDn9EGHdPyDaVw5Sxf9uQKCjSNBtL8cs=");
       console.log(result.data.contracts);
-      // const data = await this.secretJsClient.getContracts(this.codeId);
       const casinos = [];
       for (let i=0; i<result.data.contracts.length; i++) {
         const casinoInfo = await this.terra.wasm.contractQuery(
