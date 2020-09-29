@@ -133,7 +133,7 @@ export default {
     return {
       show: true,
       resultMessage: '',
-      wasmbetAddress: 'https://wasmbet.com/',
+      wasmbetAddress: 'https://secret.wasmbet.com/',
       contractAddress: null,
       address: null,
       prediction: 30,
@@ -202,7 +202,7 @@ export default {
         chainId: "test",
         walletProvider: window.cosmosJSWalletProvider,
         rpc: "http://51.132.234.211:26657/",
-        rest: "https://wasmbet.com"
+        rest: "https://secret.wasmbet.com"
       });
       await this.cosmosJS.enable();
       this.address = (await this.cosmosJS.getKeys())[0].bech32Address;
