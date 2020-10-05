@@ -27,12 +27,6 @@
                 <md-field>
                   <label for="movie">sort - soon</label>
                   <md-select name="movie" id="movie">
-                    <!-- <md-option value="fight-club">자본금</md-option>
-                    <md-option value="godfather">배당률</md-option>
-                    <md-option value="godfather-ii">누적배팅금</md-option>
-                    <md-option value="godfather-iii">Godfather III</md-option>
-                    <md-option value="godfellas">Godfellas</md-option>
-                    <md-option value="pulp-fiction">Pulp Fiction</md-option> -->
                     <md-option value="scarface">capital</md-option>
                   </md-select>
                 </md-field>
@@ -68,7 +62,7 @@
                     </div>
                     <div class="md-layout md-gutter" style="color: white; text-align:left; margin-top:5px; font-size:12px;">
                       <div class="md-layout-item">cumulative betting coin</div>
-                      <div class="md-layout-item">founder commission</div>
+                      <div class="md-layout-item">founder commission - soon</div>
                       <div class="md-layout-item"></div>
                     </div>
                     <div class="md-layout">
@@ -148,7 +142,7 @@
                   <md-table-row>
                     <md-table-head md-numeric>ID</md-table-head>
                     <md-table-head>address</md-table-head>
-                    <md-table-head>stake</md-table-head>
+                    <md-table-head>share</md-table-head>
                     <md-table-head>profit</md-table-head>
                   </md-table-row>
 
@@ -193,7 +187,7 @@
                   <md-table-row>
                     <md-table-head md-numeric>ID</md-table-head>
                     <md-table-head>address</md-table-head>
-                    <md-table-head>stake</md-table-head>
+                    <md-table-head>share</md-table-head>
                     <md-table-head>profit</md-table-head>
                   </md-table-row>
 
@@ -307,10 +301,23 @@ export default {
     }
 	},
   async mounted() {
-    // this.checkWallet();
-    if (this.address) {
+    this.contractAddress = this.$route.params.contractAddress;
+    this.address = this.$route.params.walletAddress;
+
+    this.terra = new LCDClient(this.lcdClientConfig);
+
+    console.log(this.terra);
+
+    this.ext = new Extension();
+
+    this.ext.connect();
+
+    this.ext.on("onConnect", async({ address }) => {
+      this.address = address;
+      this.balance = parseInt((await this.terra.bank.balance(address)).get("ukrw").amount.toString())/1000000;
+      console.log(this.balance);
       await this.getCasinoList();
-    }
+    });
   },
   methods: {
     async setMasterWallet1() {
@@ -475,7 +482,7 @@ export default {
         chainId: "test",
         walletProvider: window.cosmosJSWalletProvider,
         rpc: "http://51.132.234.211:26657/",
-        rest: "https://secret.wasmbet.com"
+        rest: "https://wasmbet.com"
       });
       await this.cosmosJS.enable();
       this.address = (await this.cosmosJS.getKeys())[0].bech32Address;

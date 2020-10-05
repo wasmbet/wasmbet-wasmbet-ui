@@ -202,7 +202,7 @@ export default {
         chainId: "test",
         walletProvider: window.cosmosJSWalletProvider,
         rpc: "http://51.132.234.211:26657/",
-        rest: "https://secret.wasmbet.com"
+        rest: "https://wasmbet.com"
       });
       await this.cosmosJS.enable();
       this.address = (await this.cosmosJS.getKeys())[0].bech32Address;
