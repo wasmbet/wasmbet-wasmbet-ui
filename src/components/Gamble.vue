@@ -71,28 +71,7 @@
                 <div class="social-row">
                     <ul>
                         <li>
-                            <a target="_blank" href="https://www.facebook.com"><i class="icon-fb"></i></a>
-                        </li
-                        ><li>
-                            <a target="_blank" href="https://twitter.com/"><i class="icon-twitter"></i></a>
-                        </li 
-                        ><li>
-                            <a target="_blank" href="https://plus.google.com/"><i class="icon-gplus"></i></a>
-                        </li
-                        ><li>
-                            <a target="_blank" href="https://www.linkedin.com/"><i class="icon-in"></i></a>
-                        </li
-                        ><li>
-                            <a target="_blank" href="https://www.youtube.com/"><i class="icon-youtube"></i></a>
-                        </li
-                        ><li>
-                            <a target="_blank" href="https://www.behance.net/"><i class="icon-be"></i></a>
-                        </li
-                        ><li>
-                            <a target="_blank" href="https://dribbble.com/"><i class="icon-dribbble"></i></a>
-                        </li
-                        ><li>
-                            <a target="_blank" href="https://in.pinterest.com/"><i class="icon-pinterest"></i></a>
+                            <a target="_blank" href="https://twitter.com/wasmbet/"><i class="icon-twitter"></i></a>
                         </li>
                     </ul>
                 </div>
@@ -218,7 +197,12 @@ export default {
           },
           { "ukrw": `${this.betAmount*1000000}` }, // coins
         );
-        this.betResult = await this.getBettngResult();
+        try {
+          this.betResult = await this.getBettngResult();
+        } catch (e) {
+          console.log(e);
+        }
+        
         this.ext.post([execute], this.bettingCallback);
       } catch(e) {
         console.log(e);
@@ -236,7 +220,11 @@ export default {
         try {
           while (true) {
             let result = await this.getBettngResult();
-            if (this.betResult.start_time !== result.start_time) {
+            if (!this.betResult && result && result.start_time) {
+              this.bettingList = [result].concat(this.bettingList);
+              this.$refs.clock.stopSpin(result.lucky_number);
+              break;
+            } else if (this.betResult && this.betResult.start_time !== result.start_time) {
               this.bettingList = [result].concat(this.bettingList);
               this.$refs.clock.stopSpin(result.lucky_number);
               break;
@@ -260,16 +248,20 @@ export default {
       }
     },
     async getBettngResult() {
-      const result = await this.terra.wasm.contractQuery(
+      try {
+        const result = await this.terra.wasm.contractQuery(
         this.contractAddress,
-        {
-          getmystate: {
-            address: this.address,
-          },
-        } // query msg
-      );
-      console.log(result);
-      return result;
+          {
+            getmystate: {
+              address: this.address,
+            },
+          } // query msg
+        );
+        console.log(result);
+        return result;
+      } catch(e) {
+        console.log(e);
+      }
     },
     playSound(result) {
       if (result) {
