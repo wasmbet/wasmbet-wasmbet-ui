@@ -1,6 +1,7 @@
 # wasmbet-test
 
 > A Vue.js project
+http://secret.wasmbet.com:8080
 
 ## Build Setup
 
