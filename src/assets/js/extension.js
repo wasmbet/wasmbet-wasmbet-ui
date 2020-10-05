@@ -23,6 +23,7 @@ class MyExtension {
 
         console.log('setExtenstion onPost');
         this.extension.on("onPost", async payload => {
+            console.log('callback onPost');
             if (this.beforeId !== payload.id) {
                 this.callback(payload);
                 this.beforeId = payload.id;

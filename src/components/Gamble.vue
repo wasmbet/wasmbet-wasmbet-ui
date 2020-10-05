@@ -5,6 +5,7 @@
             <div class="head-area">
                 <div>
                   <button @click="$router.push('/')">stake</button>
+                  <button @click="getBettngResult">test get result</button>
                 </div>
                 <div style="color: white; text-align: center;" v-if="address">TERRA WASMBET</div>
                 <div style="color: white; text-align: center;" v-if="!address">
@@ -17,7 +18,7 @@
             </div>
             <div class="middle-area">
                 <div class="countdown-row" style="">
-						          <div class="my counting-row" style="background-color: #222222; padding: 20px 20px 50px 20px; border-radius: 20px; vertical-align: middle;">
+						          <div class="my counting-row" style="background-color: #222222; padding: 20px 20px 20px 20px; border-radius: 20px; vertical-align: middle;">
                         <div class="row justify-content-center" style="padding: 40px; text-align: center">
                           <a @click="setPosition('under')" class="postion-button" :style="(position === 'under') ? 'color:white !important; text-decoration: underline;' : null">
                             UNDER
@@ -51,6 +52,9 @@
                             <input type="number" :value="balance" readonly>
                             <button class="red-button" :disabled="isBetting" @click="betting" :style="(isBetting) ? 'background-color: #797979;' : ''">{{`ROLL ${position.toUpperCase()} ${prediction}`}}</button>
                             <!-- <button class="red-button" :disabled="isBetting" @click="test">테스트</button> -->
+                        </div>
+                        <div style="margin-bottom: 10px; color: #d9d9d9; font-size: 14px; text-align: center;">
+                            <span>Note: network tx fee is very expensive (over 40krw)</span>
                         </div>
                     </div>
                     <span class="num1" id="min1" :style="predictionStyle">{{prediction}}</span>
@@ -120,6 +124,7 @@ export default {
       contractAddress: null,
       address: null,
       prediction: 30,
+      betResult: null,
       betAmount: 1,
       terra: null,
       ext: null,
@@ -192,7 +197,6 @@ export default {
     },
     async betting(positon) {
       try {
-        console.log('bbbbbbbbbbbbbbbbbbbbbeeeeeeeeeeettttttttttttttttttttttttttttttttttttttttinmg');
         this.isBetting = true;
         this.predictionStyle.color = '#fff';
         this.resultMessage = '';
@@ -214,7 +218,7 @@ export default {
           },
           { "ukrw": `${this.betAmount*1000000}` }, // coins
         );
-
+        this.betResult = await this.getBettngResult();
         this.ext.post([execute], this.bettingCallback);
       } catch(e) {
         console.log(e);
@@ -226,24 +230,29 @@ export default {
       }
     },
     async bettingCallback(payload) {
-      console.log('bettingCallback');
-      console.log(payload);
+      // console.log('bettingCallback');
+      // console.log(payload);
       if (payload.success) {
         try {
-          let result = await this.getBettngResult();
-          console.log(result);
-          this.bettingList = [result].concat(this.bettingList);
-          this.$refs.clock.stopSpin(result.lucky_number);
+          while (true) {
+            let result = await this.getBettngResult();
+            if (this.betResult.start_time !== result.start_time) {
+              this.bettingList = [result].concat(this.bettingList);
+              this.$refs.clock.stopSpin(result.lucky_number);
+              break;
+            }
+          }
         } catch(e) {
           console.log(e);
-          alert('error => check console.log');
+          alert('error => check console.log1');
           this.$refs.clock.stopSpin();
           this.isBetting = false;
           this.predictionStyle.color = '#fff';
           await this.getAmount();
         } 
       } else {
-        alert('error => check console.log');
+        alert('error => check console.log2 - payload fail');
+        console.log(payload);
         this.$refs.clock.stopSpin();
         this.isBetting = false;
         this.predictionStyle.color = '#fff';
@@ -259,6 +268,7 @@ export default {
           },
         } // query msg
       );
+      console.log(result);
       return result;
     },
     playSound(result) {
